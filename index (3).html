@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Receipt Invoice</title>
+    <style>
+        :root {
+            --color-bg-primary: #fcfcf9;
+            --color-surface: #fffefd;
+            --color-text-primary: #13343b;
+            --color-text-secondary: #626c71;
+            --color-primary: #21808d;
+            --color-border: rgba(94, 82, 64, 0.2);
+            --color-border-light: rgba(94, 82, 64, 0.12);
+            --color-success: #21808d;
+            --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-bg-primary: #1f2121;
+                --color-surface: #262828;
+                --color-text-primary: #f5f5f5;
+                --color-text-secondary: rgba(167, 169, 169, 0.7);
+                --color-primary: #32b8c6;
+                --color-border: rgba(119, 124, 124, 0.3);
+                --color-border-light: rgba(119, 124, 124, 0.2);
+                --color-success: #32b8c6;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family-base);
+            background-color: var(--color-bg-primary);
+            color: var(--color-text-primary);
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid var(--color-border-light);
+        }
+
+        .company-info h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--color-primary);
+            margin-bottom: 8px;
+        }
+
+        .company-info p {
+            font-size: 14px;
+            color: var(--color-text-secondary);
+            margin: 3px 0;
+        }
+
+        .receipt-title {
+            text-align: right;
+        }
+
+        .receipt-title h2 {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            margin-bottom: 10px;
+        }
+
+        .receipt-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 16px;
+            background-color: rgba(33, 128, 141, 0.15);
+            color: var(--color-success);
+            border: 1px solid rgba(33, 128, 141, 0.25);
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 13px;
+            gap: 6px;
+        }
+
+        .receipt-status::before {
+            content: '✓';
+            font-weight: 700;
+        }
+
+        .receipt-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .detail-section h3 {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--color-text-secondary);
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .detail-section p {
+            font-size: 15px;
+            margin: 5px 0;
+            color: var(--color-text-primary);
+        }
+
+        .detail-section strong {
+            font-weight: 600;
+        }
+
+        .invoice-meta {
+            background-color: rgba(33, 128, 141, 0.05);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--color-border-light);
+            margin-bottom: 40px;
+        }
+
+        .invoice-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .meta-item label {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--color-text-secondary);
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .meta-item span {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--color-text-primary);
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        .items-table thead {
+            background-color: rgba(33, 128, 141, 0.08);
+            border-top: 1px solid var(--color-border-light);
+            border-bottom: 1px solid var(--color-border-light);
+        }
+
+        .items-table th {
+            text-align: left;
+            padding: 14px 16px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            color: var(--color-text-secondary);
+        }
+
+        .items-table th:last-child,
+        .items-table td:last-child {
+            text-align: right;
+        }
+
+        .items-table tbody tr {
+            border-bottom: 1px solid var(--color-border-light);
+        }
+
+        .items-table td {
+            padding: 16px;
+            font-size: 14px;
+            color: var(--color-text-primary);
+        }
+
+        .item-description {
+            color: var(--color-text-secondary);
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .totals {
+            margin-left: auto;
+            width: 350px;
+            margin-bottom: 40px;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            font-size: 15px;
+        }
+
+        .total-row:not(:last-child) {
+            border-bottom: 1px solid var(--color-border-light);
+        }
+
+        .total-row.grand-total {
+            border-top: 2px solid var(--color-border);
+            font-size: 18px;
+            font-weight: 700;
+            padding-top: 16px;
+            margin-top: 8px;
+            color: var(--color-primary);
+        }
+
+        .payment-info {
+            background-color: rgba(33, 128, 141, 0.05);
+            padding: 24px;
+            border-radius: 8px;
+            border: 1px solid var(--color-border-light);
+            margin-bottom: 30px;
+        }
+
+        .payment-info h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--color-text-primary);
+        }
+
+        .payment-details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .payment-detail-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+        }
+
+        .payment-detail-item label {
+            color: var(--color-text-secondary);
+            font-weight: 500;
+        }
+
+        .payment-detail-item span {
+            color: var(--color-text-primary);
+            font-weight: 600;
+        }
+
+        .notes {
+            padding: 20px;
+            background-color: rgba(33, 128, 141, 0.03);
+            border-left: 3px solid var(--color-primary);
+            border-radius: 4px;
+            margin-bottom: 30px;
+        }
+
+        .notes h4 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--color-text-primary);
+        }
+
+        .notes p {
+            font-size: 14px;
+            color: var(--color-text-secondary);
+            line-height: 1.6;
+        }
+
+        .footer {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid var(--color-border-light);
+            color: var(--color-text-secondary);
+            font-size: 13px;
+        }
+
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            background-color: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(33, 128, 141, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .print-button:hover {
+            background-color: #1d7480;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(33, 128, 141, 0.4);
+        }
+
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+                border: none;
+                padding: 20px;
+            }
+            .print-button {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 24px;
+            }
+            .header {
+                flex-direction: column;
+                gap: 24px;
+            }
+            .receipt-title {
+                text-align: left;
+            }
+            .receipt-details {
+                grid-template-columns: 1fr;
+            }
+            .invoice-meta-grid {
+                grid-template-columns: 1fr;
+            }
+            .totals {
+                width: 100%;
+            }
+            .payment-details-grid {
+                grid-template-columns: 1fr;
+            }
+            .print-button {
+                position: static;
+                width: 100%;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="print-button" onclick="window.print()">🖨️ Print Receipt</button>
+
+    <div class="container">
+        <div class="header">
+            <div class="company-info">
+                <h1>Acme Corporation</h1>
+                <p>123 Business Street, Suite 100</p>
+                <p>San Francisco, CA 94102</p>
+                <p>Phone: (555) 123-4567</p>
+                <p>Email: billing@acmecorp.com</p>
+                <p>Tax ID: 12-3456789</p>
+            </div>
+            <div class="receipt-title">
+                <h2>RECEIPT</h2>
+                <div class="receipt-status">PAID</div>
+            </div>
+        </div>
+
+        <div class="receipt-details">
+            <div class="detail-section">
+                <h3>Bill To</h3>
+                <p><strong>John Smith</strong></p>
+                <p>Tech Solutions Inc.</p>
+                <p>456 Client Avenue</p>
+                <p>Los Angeles, CA 90001</p>
+                <p>Email: john.smith@techsolutions.com</p>
+                <p>Phone: (555) 987-6543</p>
+            </div>
+            <div class="detail-section">
+                <h3>Receipt Details</h3>
+                <p><strong>Receipt Number:</strong> RCP-2025-00342</p>
+                <p><strong>Invoice Number:</strong> INV-2025-00342</p>
+                <p><strong>Receipt Date:</strong> November 21, 2025</p>
+                <p><strong>Payment Date:</strong> November 21, 2025</p>
+            </div>
+        </div>
+
+        <div class="invoice-meta">
+            <div class="invoice-meta-grid">
+                <div class="meta-item">
+                    <label>Payment Method</label>
+                    <span>Credit Card</span>
+                </div>
+                <div class="meta-item">
+                    <label>Transaction ID</label>
+                    <span>TXN-78945612</span>
+                </div>
+                <div class="meta-item">
+                    <label>Card Last 4 Digits</label>
+                    <span>•••• 4242</span>
+                </div>
+            </div>
+        </div>
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Qty</th>
+                    <th>Unit Price</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div><strong>Web Development Services</strong></div>
+                        <div class="item-description">Custom website development and design</div>
+                    </td>
+                    <td>160 hrs</td>
+                    <td>$150.00</td>
+                    <td>$24,000.00</td>
+                </tr>
+                <tr>
+                    <td>
+                        <div><strong>SEO Optimization</strong></div>
+                        <div class="item-description">On-page and technical SEO improvements</div>
+                    </td>
+                    <td>80 hrs</td>
+                    <td>$125.00</td>
+                    <td>$10,000.00</td>
+                </tr>
+                <tr>
+                    <td>
+                        <div><strong>Logo Design</strong></div>
+                        <div class="item-description">Brand identity and logo creation</div>
+                    </td>
+                    <td>1</td>
+                    <td>$3,500.00</td>
+                    <td>$3,500.00</td>
+                </tr>
+                <tr>
+                    <td>
+                        <div><strong>Hosting &amp; Maintenance</strong></div>
+                        <div class="item-description">Annual hosting and website maintenance</div>
+                    </td>
+                    <td>1</td>
+                    <td>$12,500.00</td>
+                    <td>$12,500.00</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="totals">
+            <div class="total-row">
+                <span>Subtotal:</span>
+                <span>$50,000.00</span>
+            </div>
+            <div class="total-row">
+                <span>Discount (5%):</span>
+                <span>-$2,500.00</span>
+            </div>
+            <div class="total-row">
+                <span>Tax (8.5%):</span>
+                <span>$4,037.50</span>
+            </div>
+            <div class="total-row grand-total">
+                <span>Total Paid:</span>
+                <span>$51,537.50</span>
+            </div>
+        </div>
+
+        <div class="payment-info">
+            <h3>Payment Information</h3>
+            <div class="payment-details-grid">
+                <div class="payment-detail-item">
+                    <label>Amount Paid:</label>
+                    <span>$51,537.50</span>
+                </div>
+                <div class="payment-detail-item">
+                    <label>Payment Status:</label>
+                    <span style="color: var(--color-success);">✓ Paid in Full</span>
+                </div>
+                <div class="payment-detail-item">
+                    <label>Payment Method:</label>
+                    <span>Visa Credit Card</span>
+                </div>
+                <div class="payment-detail-item">
+                    <label>Authorization Code:</label>
+                    <span>AUTH-992847</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="notes">
+            <h4>Notes</h4>
+            <p>Thank you for your business! This receipt confirms that payment has been received in full for Invoice #INV-2025-00342. All services have been delivered as agreed. If you have any questions about this receipt, please contact our billing department at billing@acmecorp.com or call (555) 123-4567.</p>
+        </div>
+
+        <div class="footer">
+            <p><strong>Thank you for your business!</strong></p>
+            <p>This is a computer-generated receipt and requires no signature.</p>
+            <p>&copy; 2025 Acme Corporation. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
